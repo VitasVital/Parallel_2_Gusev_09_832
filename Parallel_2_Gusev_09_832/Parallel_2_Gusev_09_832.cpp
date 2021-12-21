@@ -30,16 +30,17 @@ void show_read_arr(int arr[][N])
 	}
 }
 
-int OptimalRoute(int req, int root)
+void OptimalRoute(int req, int root, int &count_nodes)
 {
-	int count_nodes = 0;
 	ifstream f("neighboring_nodes_2.txt");
 	int mas[N][N];
 	for (int i = 0; i < N; i++)
 		for (int j = 0; j < N; j++)
 			f >> mas[i][j];
 
-	int k;
+	int k = mas[0][root];
+	mas[0][root] = mas[root][root];
+	mas[root][root] = k;
 	for (int j = 0; j < N; j++) //делаем root корневым
 	{
 		k = mas[root][j];
@@ -71,7 +72,7 @@ int OptimalRoute(int req, int root)
 			}
 		}
 	}
-	cout << "ѕуть до вершины " << req << endl;
+	cout << "The path to the top " << req << endl; //путь до вершины
 	cout << req;
 	while (!Edges.empty()) {
 		e = Edges.top();
@@ -83,7 +84,11 @@ int OptimalRoute(int req, int root)
 		}
 	}
 	cout << endl;
-	return count_nodes;
+}
+
+void MyMPIBcast(int root, int* number_to_send)
+{
+	
 }
 
 
@@ -96,32 +101,24 @@ int main(int argc, char** argv)
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-	////считываем матрицу смежности
-	//ifstream f("neighboring_nodes.txt");
-	//int a[N][N];
-	//for (int i = 0; i < N; i++)
-	//	for (int j = 0; j < N; j++)
-	//		f >> a[i][j];
 
-	////выводим матрицу смежности
-	//show_read_arr(a);
-	
+	int k = 1;
+	MyMPIBcast(5, &k);
 	if (rank == 0)
 	{
-		//OptimalRoute();
 		int count_routes[N] = { 0 };
 		int root = 4;
 		for (int i = 1; i < N; i++)
 		{
-			count_routes[i] = OptimalRoute(i, root);
+			OptimalRoute(i, root, count_routes[i]);
 		}
 
-		cout << " оличество ребер до узлов:" << endl;
+		cout << "Number of edges to nodes:" << endl; // оличество ребер в узлах
 		for (int i = 1; i < N; i++)
 		{
 			cout << i << "=" << count_routes[i] << endl;
 		}
-		
+
 		int* arr = new int[size];
 		for (int i = 0; i < size; i++) arr[i] = i;
 		for (int i = 1; i < size; i++) MPI_Send(arr, i, MPI_INT, i, 5, MPI_COMM_WORLD);
@@ -150,9 +147,8 @@ int main(int argc, char** argv)
 		comm -  оммуникатор в котором находитс€ процесс от которого получаем сообщение.
 		status - структура, определенна€ в MPI котора€ хранит информацию о пересылке и статус ее завершени€.*/
 
-		cout << "Process:" << rank << " || Count: " << count << " || Array: ";
+		//cout << "Process:" << rank << " || Count: " << count << " || Array: ";
 		//show_arr(buf, count);
 	}
 	MPI_Finalize();
-	return 0;
 }
