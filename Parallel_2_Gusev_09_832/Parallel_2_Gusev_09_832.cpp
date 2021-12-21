@@ -30,32 +30,28 @@ void show_read_arr(int arr[][N])
 	}
 }
 
-void OptimalRoute()
+int OptimalRoute(int req)
 {
-	system("chcp 1251");
-	system("cls");
-	queue<int> Queue;
-	stack<Edge> Edges;
-	int req;
-	Edge e;
+	int count_nodes = 0;
 	ifstream f("neighboring_nodes.txt");
 	int mas[N][N];
 	for (int i = 0; i < N; i++)
 		for (int j = 0; j < N; j++)
 			f >> mas[i][j];
-	int nodes[N]; // вершины графа
-	for (int i = 0; i < N; i++) // исходно все вершины равны 0
+	
+	queue<int> Queue;
+	stack<Edge> Edges;
+	Edge e;
+	int nodes[7]; // вершины графа
+	for (int i = 0; i < 7; i++) // исходно все вершины равны 0
 		nodes[i] = 0;
-	cout << "N = ";
-	cin >> req;
-	req--;
 	Queue.push(0); // помещаем в очередь первую вершину
 	while (!Queue.empty())
 	{
 		int node = Queue.front(); // извлекаем вершину
 		Queue.pop();
 		nodes[node] = 2; // отмечаем ее как посещенную
-		for (int j = 0; j < N; j++)
+		for (int j = 0; j < 7; j++)
 		{
 			if (mas[node][j] == 1 && nodes[j] == 0)
 			{ // если вершина смежная и не обнаружена
@@ -66,19 +62,20 @@ void OptimalRoute()
 				if (node == req) break;
 			}
 		}
-		cout << node + 1 << endl; // выводим номер вершины
 	}
-	cout << "Путь до вершины " << req + 1 << endl;
-	cout << req + 1;
+	/*cout << "Путь до вершины " << req << endl;
+	cout << req;*/
 	while (!Edges.empty()) {
 		e = Edges.top();
 		Edges.pop();
 		if (e.end == req) {
 			req = e.begin;
-			cout << " <- " << req + 1;
+			//cout << " <- " << req;
+			count_nodes += 1;
 		}
 	}
-	cin.get(); cin.get();
+	//cout << endl;
+	return count_nodes;
 }
 
 
@@ -100,12 +97,21 @@ int main(int argc, char** argv)
 
 	////выводим матрицу смежности
 	//show_read_arr(a);
-
-	OptimalRoute();
 	
 	if (rank == 0)
 	{
 		//OptimalRoute();
+		int count_routes[N] = { 0 };
+		for (int i = 1; i < N; i++)
+		{
+			count_routes[i] = OptimalRoute(i);
+		}
+
+		cout << "Количество ребер до узлов:" << endl;
+		for (int i = 1; i < N; i++)
+		{
+			cout << i << "=" << count_routes[i] << endl;
+		}
 		
 		int* arr = new int[size];
 		for (int i = 0; i < size; i++) arr[i] = i;
