@@ -30,14 +30,22 @@ void show_read_arr(int arr[][N])
 	}
 }
 
-int OptimalRoute(int req)
+int OptimalRoute(int req, int root)
 {
 	int count_nodes = 0;
-	ifstream f("neighboring_nodes.txt");
+	ifstream f("neighboring_nodes_2.txt");
 	int mas[N][N];
 	for (int i = 0; i < N; i++)
 		for (int j = 0; j < N; j++)
 			f >> mas[i][j];
+
+	int k;
+	for (int j = 0; j < N; j++) //делаем root корневым
+	{
+		k = mas[root][j];
+		mas[root][j] = mas[0][j];
+		mas[0][j] = k;
+	}
 	
 	queue<int> Queue;
 	stack<Edge> Edges;
@@ -63,18 +71,18 @@ int OptimalRoute(int req)
 			}
 		}
 	}
-	/*cout << "Путь до вершины " << req << endl;
-	cout << req;*/
+	cout << "Путь до вершины " << req << endl;
+	cout << req;
 	while (!Edges.empty()) {
 		e = Edges.top();
 		Edges.pop();
 		if (e.end == req) {
 			req = e.begin;
-			//cout << " <- " << req;
+			cout << " <- " << req;
 			count_nodes += 1;
 		}
 	}
-	//cout << endl;
+	cout << endl;
 	return count_nodes;
 }
 
@@ -102,9 +110,10 @@ int main(int argc, char** argv)
 	{
 		//OptimalRoute();
 		int count_routes[N] = { 0 };
+		int root = 4;
 		for (int i = 1; i < N; i++)
 		{
-			count_routes[i] = OptimalRoute(i);
+			count_routes[i] = OptimalRoute(i, root);
 		}
 
 		cout << "Количество ребер до узлов:" << endl;
